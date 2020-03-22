@@ -34,10 +34,14 @@ class CRM_Moodlesync_Form_MoodleSyncSettings extends CRM_Core_Form {
     $participantRoles = CRM_Event_PseudoConstant::participantRole();
     foreach ($participantRoles as $roleID => $roleName) {
       $label = "Map participant role '$roleName' to Moodle role";
-      $this->add('select', "role_id_$roleID", $label, $moodleRoles, FALSE);
-      $elements[] = "role_id_$roleID";
+      $name = "map_role_id_$roleID";
+      $this->add('select', $name, $label, $moodleRoles, FALSE);
+      $elements[] = $name;
+      $v = $config->getMoodleRoleFromCiviRole($name);
+      if ($v) {
+        $defaults[$name] = $v;
+      }
     }
-
 
     // add the Test button if we have a url and token
     if ($defaults['url'] && $defaults['token']) {
@@ -62,6 +66,11 @@ class CRM_Moodlesync_Form_MoodleSyncSettings extends CRM_Core_Form {
     // store values
     $config->setMoodleURL($values['url']);
     $config->setMoodleToken($values['token']);
+    foreach ($values as $k => $v) {
+      if (strpos($k, 'map_role_id_') === 0) {
+        $config->setMoodleRoleFromCiviRole($k, $v);
+      }
+    }
 
     // make sure the custom fields exist
     $config->createCustomFields();
