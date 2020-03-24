@@ -13,7 +13,7 @@ class CRM_Moodlesync_API {
    */
   public function __construct($config) {
     $this->config = $config;
-    $this->url =  CRM_Utils_File::addTrailingSlash($config->getMoodleURL(), '/') . 'webservice/rest/server.php';
+    $this->url =  $config->getMoodleURL() . 'webservice/rest/server.php';
     $this->token = $config->getMoodleToken();
 
     $this->httpClient = new CRM_Utils_HttpClient();
@@ -37,23 +37,20 @@ class CRM_Moodlesync_API {
     return $response;
   }
 
-  public function createCourse($id, $title, $startDate) {
+  public function createCourse($id, $title, $startDate, $endDate, $categoryId) {
     $apiParams = [
       'courses[0][fullname]' => $title,
       'courses[0][shortname]' => $title,
-      'courses[0][categoryid]' => 1,
+      'courses[0][categoryid]' => $categoryId,
       'courses[0][idnumber]' => $id,
-      'courses[0][startdate]' => $startDate,
+      'courses[0][startdate]' => strtotime($startDate),
+      'courses[0][enddate]' => strtotime($endDate),
     ];
 
     $response = $this->sendRequest('core_course_create_courses', $apiParams);
 
     // return the course id
-    return $response[0]['id'];
-  }
-
-  public function updateCourseCategories($categories) {
-
+    return $response[0]->id;
   }
 
   private function sendRequest($apiFunc, $apiParams) {
@@ -65,13 +62,23 @@ class CRM_Moodlesync_API {
 
     // add the extra params
     foreach ($apiParams as $k => $v) {
-      $searchArgs[] = "$k=$v";
+      $searchArgs[] = "$k=" . urlencode($v);
     }
 
     // send the request
-    list($status, $response) = $this->httpClient->get($this->url . '?' . implode('&', $searchArgs));
+    $url = $this->url . '?' . implode('&', $searchArgs);
+    //watchdog('MoodleSyncDebug', $url);
+
+    list($status, $response) = $this->httpClient->get($url);
     if ($status == 'ok') {
-      return json_decode($response);
+      $decodedResponse = json_decode($response);
+      if (property_exists($decodedResponse, 'exception')) {
+        throw new Exception('MoodleSync Error: API=' . $apiFunc . ', Exception='. $decodedResponse->exception . ', Message=' . $decodedResponse->message);
+      }
+      else {
+        // success
+        return $decodedResponse;
+      }
     }
     else {
       throw new Exception('Request failed');

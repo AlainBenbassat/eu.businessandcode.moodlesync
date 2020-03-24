@@ -24,7 +24,12 @@ class CRM_Moodlesync_Config {
   }
 
   public function setMoodleURL($value) {
-    Civi::settings()->set('moodlesync_url', $value);
+    $url = CRM_Utils_File::addTrailingSlash($value, '/');
+    Civi::settings()->set('moodlesync_url', $url);
+  }
+
+  public function getCourseURL($courseId) {
+    return $this->getMoodleURL() . "course/view.php?id=$courseId";
   }
 
   public function getMoodleToken() {
@@ -145,8 +150,10 @@ class CRM_Moodlesync_Config {
           'name' => $customFieldName,
           'column_name' => $customFieldName,
           'label' => E::ts('View in Moodle'),
-          'data_type' => 'Link',
-          'html_type' => 'Link',
+          'data_type' => 'Memo',
+          'html_type' => 'RichTextEditor',
+          'note_columns' => '60',
+          'note_rows' => '4',
           'is_active' => 1,
           'is_searchable' => 0,
           'is_view' => 1,
@@ -322,8 +329,10 @@ class CRM_Moodlesync_Config {
           'name' => $customFieldName,
           'column_name' => $customFieldName,
           'label' => E::ts('View in Moodle'),
-          'data_type' => 'Link',
-          'html_type' => 'Link',
+          'data_type' => 'Memo',
+          'html_type' => 'RichTextEditor',
+          'note_columns' => '60',
+          'note_rows' => '4',
           'is_active' => 1,
           'is_searchable' => 0,
           'is_view' => 1,
