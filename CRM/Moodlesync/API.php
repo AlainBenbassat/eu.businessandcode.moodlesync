@@ -28,6 +28,34 @@ class CRM_Moodlesync_API {
     $this->sendRequest('core_user_get_users', $params);
   }
 
+  public function getCourseCategories() {
+    $apiParams = [];
+
+    $response = $this->sendRequest('core_course_get_categories', $apiParams);
+
+    // return the categories
+    return $response;
+  }
+
+  public function createCourse($id, $title, $startDate) {
+    $apiParams = [
+      'courses[0][fullname]' => $title,
+      'courses[0][shortname]' => $title,
+      'courses[0][categoryid]' => 1,
+      'courses[0][idnumber]' => $id,
+      'courses[0][startdate]' => $startDate,
+    ];
+
+    $response = $this->sendRequest('core_course_create_courses', $apiParams);
+
+    // return the course id
+    return $response[0]['id'];
+  }
+
+  public function updateCourseCategories($categories) {
+
+  }
+
   private function sendRequest($apiFunc, $apiParams) {
     $searchArgs = [
       'wstoken=' . $this->token,
@@ -43,12 +71,11 @@ class CRM_Moodlesync_API {
     // send the request
     list($status, $response) = $this->httpClient->get($this->url . '?' . implode('&', $searchArgs));
     if ($status == 'ok') {
-      return $response;
+      return json_decode($response);
     }
     else {
       throw new Exception('Request failed');
     }
-
   }
 
 }

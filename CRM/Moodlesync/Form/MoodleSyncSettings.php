@@ -43,11 +43,11 @@ class CRM_Moodlesync_Form_MoodleSyncSettings extends CRM_Core_Form {
       }
     }
 
-    // add the Test button if we have a url and token
+    // add the Retrieve Categories button if we have a url and token
     if ($defaults['url'] && $defaults['token']) {
       $buttons[] = [
         'type' => 'refresh',
-        'name' => E::ts('Test'),
+        'name' => E::ts('Retrieve Course Categories'),
         'icon' => 'fa-check-circle',
       ];
     }
@@ -79,8 +79,9 @@ class CRM_Moodlesync_Form_MoodleSyncSettings extends CRM_Core_Form {
     if (array_key_exists('_qf_MoodleSyncSettings_refresh', $values)) {
       try {
         $moodleApi = new CRM_Moodlesync_API($config);
-        $moodleApi->testConnection();
-        CRM_Core_Session::setStatus(E::ts('OK, successful connection with Moodle!'), E::ts('Success'), 'success');
+        $categories = $moodleApi->getCourseCategories();
+        $config->setCourseCategories($categories);
+        CRM_Core_Session::setStatus(E::ts('Course categories successfully retrieved.'), E::ts('Success'), 'success');
       }
       catch (Exception $e) {
         CRM_Core_Session::setStatus($e->getMessage(), E::ts('Error'), 'error');

@@ -3,6 +3,31 @@
 require_once 'moodlesync.civix.php';
 use CRM_Moodlesync_ExtensionUtil as E;
 
+function moodlesync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  if (CRM_Core_Transaction::isActive()) {
+    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'moodlesync_civicrm_post_callback', [$op, $objectName, $objectId, $objectRef]);
+  }
+  else {
+    moodlesync_civicrm_post_callback($op, $objectName, $objectId, $objectRef);
+  }
+}
+
+function moodlesync_civicrm_post_callback($op, $objectName, $objectId, $objectRef) {
+  if ($objectName == 'Event' && ($op == 'create' || $op == 'edit')) {
+    // create the course in Moodle
+    $config = CRM_Moodlesync_Config::singleton();
+    $moodleApi = new CRM_Moodlesync_API($config);
+    $courseId = $moodleApi->createCourse($objectRef->id, $objectRef->title, $objectRef->start_date);
+
+    // store the course ID
+    civicrm_api3('CustomValue', 'create', [
+      'entity_id' => $objectRef->id,
+      'entity_table' => 'civicrm_event',
+      'custom_' => $courseId,
+    ]);
+  }
+}
+
 /**
  * Implements hook_civicrm_config().
  *
