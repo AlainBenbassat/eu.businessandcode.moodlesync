@@ -104,11 +104,12 @@ class CRM_Moodlesync_Form_MoodleSyncSettings extends CRM_Core_Form {
   }
 
   private function getMoodleRoles() {
+    // there's no Moodle API to get these roles
     $moodleRoles = [
-      'student' => E::ts('Student'),
-      'teacher' => E::ts('Teacher'),
-      'manager' => E::ts('Manager'),
-      'nonediting' => E::ts('Non-editing Teacher'),
+      5 => E::ts('Student'),
+      3 => E::ts('Teacher'),
+      1 => E::ts('Manager'),
+      4 => E::ts('Non-editing Teacher'),
       'nosync' => E::ts('DO NOT SYNCHRONIZE'),
     ];
 
