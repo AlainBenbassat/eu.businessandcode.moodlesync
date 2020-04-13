@@ -32,6 +32,10 @@ class CRM_Moodlesync_Config {
     return $this->getMoodleURL() . "course/view.php?id=$courseId";
   }
 
+  public function getUserURL($userId) {
+    return $this->getMoodleURL() . "user/profile.php?id=$userId";
+  }
+
   public function getMoodleToken() {
     return Civi::settings()->get('moodlesync_token');
   }
@@ -368,7 +372,7 @@ class CRM_Moodlesync_Config {
     }
   }
 
-  private function getCustomGroupIdEvent() {
+  public function getCustomGroupIdEvent() {
     if ($this->customGroupIdMoodleEvent == 0) {
       $customGroupName = 'MoodleSync_Event';
 
@@ -401,7 +405,7 @@ class CRM_Moodlesync_Config {
     return $this->customGroupIdMoodleEvent;
   }
 
-  private function getCustomGroupIdContact() {
+  public function getCustomGroupIdContact() {
     if ($this->customGroupIdMoodleContact == 0) {
       $customGroupName = 'MoodleSync_Contact';
 

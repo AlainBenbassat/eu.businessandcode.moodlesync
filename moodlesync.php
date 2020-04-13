@@ -13,67 +13,31 @@ function moodlesync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
 }
 
 function moodlesync_civicrm_post_callback($op, $objectName, $objectId, $objectRef) {
-  if ($objectName == 'Event' && ($op == 'create' || $op == 'edit')) {
+  if ($op == 'create' || $op == 'edit') {
     try {
-      // see if we have to sync this event
-      $config = CRM_Moodlesync_Config::singleton();
-      $syncFieldId = $config->getCustomFieldIdEventSyncWithMoodle();
-      $syncThisEvent = civicrm_api3('CustomValue', 'get', [
-        'sequential' => 1,
-        'entity_id' => $objectRef->id,
-        'entity_table' => 'civicrm_event',
-        'return' => "custom_$syncFieldId",
-      ]);
-      if ($syncThisEvent['count'] > 0 && $syncThisEvent['values'][0]['latest'] == 1) {
-        // store the url to the course
-        $url = $config->getCourseURL(5);
-        civicrm_api3('CustomValue', 'create', [
-          'entity_id' => $objectRef->id,
-          'entity_table' => 'civicrm_event',
-          "custom_" . $config->getCustomFieldIdEventViewInMoodle() => "<a href=\"$url\" target=\"_blank\">$url</a>",
-        ]);
+      if ($objectName == 'Event') {
+        $syncHelper = new CRM_Moodlesync_Helper();
+        $syncHelper->syncEvent($objectRef);
+      }
+      elseif ($objectName == 'Participant') {
+        $syncHelper = new CRM_Moodlesync_Helper();
+        $syncHelper->syncParticipant($objectRef);
+      }
+    }
+    catch (Exception $e) {
+      CRM_Core_Session::setStatus($e->getMessage(), ts('Error'), 'error');
+    }
+  }
+}
 
-        // see if we already have a course id
-        $courseIdField = $config->getCustomFieldIdEventMoodleId();
-        $courseId = civicrm_api3('CustomValue', 'get', [
-          'sequential' => 1,
-          'entity_id' => $objectRef->id,
-          'entity_table' => 'civicrm_event',
-          'return' => "custom_$courseIdField",
-        ]);
-        if ($courseId['count'] > 0 && $courseId['values'][0]['latest']) {
-          // already sync'd
-        }
-        else {
-          // get the category
-          $categoryField = $config->getCustomFieldIdEventCategories();
-          $category = civicrm_api3('CustomValue', 'get', [
-            'sequential' => 1,
-            'entity_id' => $objectRef->id,
-            'entity_table' => 'civicrm_event',
-            'return' => "custom_$categoryField",
-          ]);
-          $categoryId = ($courseId['count'] > 0 && $courseId['values'][0]['latest']) ? $category['values'][0]['latest'] : 1;
-
-          // create the course in Moodle
-          $moodleApi = new CRM_Moodlesync_API($config);
-          $courseId = $moodleApi->createCourse($objectRef->id, $objectRef->title, $objectRef->start_date, $objectRef->end_date, $categoryId);
-
-          // store the Moodle course ID
-          civicrm_api3('CustomValue', 'create', [
-            'entity_id' => $objectRef->id,
-            'entity_table' => 'civicrm_event',
-            "custom_$courseIdField" => $courseId,
-          ]);
-
-          // store the url to the course
-          $url = $config->getCourseURL($courseId);
-          civicrm_api3('CustomValue', 'create', [
-            'entity_id' => $objectRef->id,
-            'entity_table' => 'civicrm_event',
-            "custom_" . $config->getCustomFieldIdEventViewInMoodle() => "<a href=\"$url\">$url</a>",
-          ]);
-        }
+function moodlesync_civicrm_custom($op, $groupID, $entityID, &$params) {
+  if ($op == 'create' || $op == 'edit') {
+    try {
+      $conf = CRM_Moodlesync_Config::singleton();
+      if ($groupID == $conf->getCustomGroupIdContact()) {
+        $syncHelper = new CRM_Moodlesync_Helper();
+        $contact = civicrm_api3('Contact', 'getsingle', ['id' => $entityID]);
+        $syncHelper->syncContact($contact, FALSE);
       }
     }
     catch (Exception $e) {

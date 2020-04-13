@@ -53,6 +53,22 @@ class CRM_Moodlesync_API {
     return $response[0]->id;
   }
 
+  public function createUser($id, $first_name, $last_name, $email) {
+    $apiParams = [
+      'users[0][username]' => $email,
+      'users[0][firstname]' => $first_name,
+      'users[0][lastname]' => $last_name,
+      'users[0][email]' => $email,
+      'users[0][idnumber]' => $id,
+      'users[0][password]' => 'A!-' . md5(uniqid()), // just generate a random password with upper case letter and non-alpha char
+    ];
+
+    $response = $this->sendRequest('core_user_create_users', $apiParams);
+
+    // return the course id
+    return $response[0]->id;
+  }
+
   private function sendRequest($apiFunc, $apiParams) {
     $searchArgs = [
       'wstoken=' . $this->token,

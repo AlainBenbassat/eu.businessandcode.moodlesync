@@ -5,9 +5,9 @@
 We assume that your website and CiviCRM are the tools to promote your events and enrol your event participants.
 Events, contacts, and participants will then be pushed to (synchronized with) your Moodle server.
 
-In this version, no information is retrieved from Moodle. So the sync is only in 1 direction: from CiviCRM to Moodle.
+The synchronization of contacts, events, and participants is only in 1 direction: from CiviCRM to Moodle.
 
-The table below shows CiviCRM terms with their corresponding Moodle terms:
+The table below shows the CiviCRM terms with their corresponding Moodle terms:
 
 | CiviCRM        | Moodle      |
 |:-------------  |:----------- |
@@ -60,6 +60,11 @@ Site Administration > Plugins > External Services
 
 OR WRITE A MOODLE PLUGIN???
 
+## Retrieving Course Categories
+
+## Custom Fields
+
+This extension creates a set of custom fields for Contacts, Events, and Participants.
 
 
 
