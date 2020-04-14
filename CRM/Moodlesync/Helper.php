@@ -187,33 +187,33 @@ class CRM_Moodlesync_Helper {
         // make sure we have a user id and a course id
         if ($userId > 0 && $courseId > 0) {
           // get the moodle role
-          $roleId = $this->config->getMoodleRoleFromCiviRole($participant['participant_role_id']);
+          $roleId = $this->config->getMoodleRoleFromCiviRole('map_role_id_' . $participant['participant_role_id']);
 
           // create the enrolment in Moodle
           $moodleApi = new CRM_Moodlesync_API($this->config);
           $enrolmentId = $moodleApi->createEnrolment($roleId, $userId, $courseId);
 
-          // store the Moodle user ID
-          civicrm_api3('CustomValue', 'create', [
-            'entity_id' => $participant['id'],
-            'entity_table' => 'civicrm_participant',
-            "custom_$enrolmentField" => $enrolmentId,
-          ]);
-
-          // store the url to the user
+          // set the url to the enrolment
           $url = $this->config->getEnrolmentURL($enrolmentId);
-          civicrm_api3('CustomValue', 'create', [
-            'entity_id' => $participant['id'],
-            'entity_table' => 'civicrm_participant',
-            "custom_" . $this->config->getCustomFieldIdParticipantViewInMoodle() => "<a href=\"$url\">$url</a>",
-          ]);
+          $url = "<a href=\"$url\">$url</a>";
 
-          // set sync field to "yes"
-          civicrm_api3('CustomValue', 'create', [
-            'entity_id' => $participant['id'],
-            'entity_table' => 'civicrm_participant',
-            "custom_$syncFieldId" => 1,
-          ]);
+          // We can't simply update the custom fields using the API due to transaction/deadlock issues
+          $sql = "
+            update
+              civicrm_value_moodlesync_participant
+            set
+              moodlesync_sync_with_moodle = 1,
+              moodlesync_enrolment_id = %2,
+              moodlesync_view_in_moodle = %3
+            where
+              entity_id = %1
+          ";
+          $sqlParams = [
+            1 => [$participant['id'], 'Integer'],
+            2 => [$enrolmentId, 'Integer'],
+            3 => [$url, 'String'],
+          ];
+          CRM_Core_DAO::executeQuery($sql, $sqlParams);
         }
       }
     }
