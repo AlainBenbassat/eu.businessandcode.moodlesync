@@ -8,6 +8,7 @@ class CRM_Moodlesync_Config {
 
   private $customGroupIdMoodleEvent = 0;
   private $customGroupIdMoodleContact = 0;
+  private $customGroupIdMoodleParticipant = 0;
 
   public function __construct() {
   }
@@ -34,6 +35,10 @@ class CRM_Moodlesync_Config {
 
   public function getUserURL($userId) {
     return $this->getMoodleURL() . "user/profile.php?id=$userId";
+  }
+
+  public function getEnrolmentURL($enrolmentId) {
+    return $this->getMoodleURL() . "enrol/editenrolment.php?ue=$enrolmentId";
   }
 
   public function getMoodleToken() {
@@ -63,6 +68,10 @@ class CRM_Moodlesync_Config {
     $this->getCustomFieldIdContactSyncWithMoodle();
     $this->getCustomFieldIdContactMoodleId();
     $this->getCustomFieldIdContactViewInMoodle();
+
+    $this->getCustomFieldIdParticipantSyncWithMoodle();
+    $this->getCustomFieldIdParticipantMoodleId();
+    $this->getCustomFieldIdParticipantViewInMoodle();
   }
 
   public function getCustomFieldIdEventSyncWithMoodle() {
@@ -351,6 +360,113 @@ class CRM_Moodlesync_Config {
     return $customField['id'];
   }
 
+  public function getCustomFieldIdParticipantSyncWithMoodle() {
+    $customFieldName = 'moodlesync_sync_with_moodle';
+    $customGroupId = $this->getCustomGroupIdParticipant();
+    try {
+      // get the field
+      $customField = civicrm_api3('CustomField', 'getsingle', [
+        'name' => $customFieldName,
+        'column_name' => $customFieldName,
+        'custom_group_id' => $customGroupId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      try {
+        // field does not exist, create it
+        $customField = civicrm_api3('CustomField', 'create', [
+          'custom_group_id' => $customGroupId,
+          'name' => $customFieldName,
+          'column_name' => $customFieldName,
+          'label' => E::ts('Synchronize participant with Moodle?'),
+          'data_type' => 'Boolean',
+          'html_type' => 'Radio',
+          'is_active' => 1,
+          'is_searchable' => 1,
+          'is_view' => 0,
+          'weight' => 1,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        CRM_Core_Error::createError(E::ts('Error in ') . __CLASS__ . '::' . __METHOD__ . ' - ' . E::ts('Could not find or create custom field'));
+      }
+    }
+
+    return $customField['id'];
+  }
+
+  public function getCustomFieldIdParticipantMoodleId() {
+    $customFieldName = 'moodlesync_enrolment_id';
+    $customGroupId = $this->getCustomGroupIdParticipant();
+    try {
+      // get the field
+      $customField = civicrm_api3('CustomField', 'getsingle', [
+        'name' => $customFieldName,
+        'column_name' => $customFieldName,
+        'custom_group_id' => $customGroupId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      try {
+        // field does not exist, create it
+        $customField = civicrm_api3('CustomField', 'create', [
+          'custom_group_id' => $customGroupId,
+          'name' => $customFieldName,
+          'column_name' => $customFieldName,
+          'label' => E::ts('Enrolment ID'),
+          'data_type' => 'String',
+          'html_type' => 'Text',
+          'is_active' => 1,
+          'is_searchable' => 1,
+          'is_view' => 1,
+          'weight' => 3,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        CRM_Core_Error::createError(E::ts('Error in ') . __CLASS__ . '::' . __METHOD__ . ' - ' . E::ts('Could not find or create custom field'));
+      }
+    }
+
+    return $customField['id'];
+  }
+
+  public function getCustomFieldIdParticipantViewInMoodle() {
+    $customFieldName = 'moodlesync_view_in_moodle';
+    $customGroupId = $this->getCustomGroupIdParticipant();
+    try {
+      // get the field
+      $customField = civicrm_api3('CustomField', 'getsingle', [
+        'name' => $customFieldName,
+        'column_name' => $customFieldName,
+        'custom_group_id' => $customGroupId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      try {
+        // field does not exist, create it
+        $customField = civicrm_api3('CustomField', 'create', [
+          'custom_group_id' => $customGroupId,
+          'name' => $customFieldName,
+          'column_name' => $customFieldName,
+          'label' => E::ts('View in Moodle'),
+          'data_type' => 'Memo',
+          'html_type' => 'RichTextEditor',
+          'note_columns' => '60',
+          'note_rows' => '4',
+          'is_active' => 1,
+          'is_searchable' => 0,
+          'is_view' => 1,
+          'weight' => 4,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        CRM_Core_Error::createError(E::ts('Error in ') . __CLASS__ . '::' . __METHOD__ . ' - ' . E::ts('Could not find or create custom field'));
+      }
+    }
+
+    return $customField['id'];
+  }
+
   public function setCourseCategories($categories) {
     $optionGroupId = $this->getCourseCategoriesOptionGroupId();
 
@@ -403,6 +519,39 @@ class CRM_Moodlesync_Config {
     }
 
     return $this->customGroupIdMoodleEvent;
+  }
+
+  public function getCustomGroupIdParticipant() {
+    if ($this->customGroupIdMoodleParticipant == 0) {
+      $customGroupName = 'MoodleSync_Participant';
+
+      try {
+        $customGroup = civicrm_api3('CustomGroup', 'getsingle', [
+          'extends' => 'Participant',
+          'name' => $customGroupName,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        try {
+          $customGroup = civicrm_api3('CustomGroup', 'create', [
+            'name' => $customGroupName,
+            'title' => 'MoodleSync',
+            'extends' => 'Participant',
+            'table_name' => 'civicrm_value_moodlesync_participant',
+            'is_reserved' => 0,
+            'collapse_adv_display' => 0,
+            'collapse_display' => 0,
+          ]);
+        }
+        catch (CiviCRM_API3_Exception $ex) {
+          CRM_Core_Error::createError(E::ts('Error in ') . __CLASS__ . '::' . __METHOD__ . ' - ' . E::ts('Could not find or create custom group'));
+        }
+      }
+
+      $this->customGroupIdMoodleParticipant = $customGroup['id'];
+    }
+
+    return $this->customGroupIdMoodleParticipant;
   }
 
   public function getCustomGroupIdContact() {

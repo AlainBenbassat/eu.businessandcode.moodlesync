@@ -3,42 +3,28 @@
 require_once 'moodlesync.civix.php';
 use CRM_Moodlesync_ExtensionUtil as E;
 
-function moodlesync_civicrm_post($op, $objectName, $objectId, &$objectRef) {
-  if (CRM_Core_Transaction::isActive()) {
-    CRM_Core_Transaction::addCallback(CRM_Core_Transaction::PHASE_POST_COMMIT, 'moodlesync_civicrm_post_callback', [$op, $objectName, $objectId, $objectRef]);
-  }
-  else {
-    moodlesync_civicrm_post_callback($op, $objectName, $objectId, $objectRef);
-  }
-}
-
-function moodlesync_civicrm_post_callback($op, $objectName, $objectId, $objectRef) {
-  if ($op == 'create' || $op == 'edit') {
-    try {
-      if ($objectName == 'Event') {
-        $syncHelper = new CRM_Moodlesync_Helper();
-        $syncHelper->syncEvent($objectRef);
-      }
-      elseif ($objectName == 'Participant') {
-        $syncHelper = new CRM_Moodlesync_Helper();
-        $syncHelper->syncParticipant($objectRef);
-      }
-    }
-    catch (Exception $e) {
-      CRM_Core_Session::setStatus($e->getMessage(), ts('Error'), 'error');
-    }
-  }
-}
-
 function moodlesync_civicrm_custom($op, $groupID, $entityID, &$params) {
   if ($op == 'create' || $op == 'edit') {
     try {
       $conf = CRM_Moodlesync_Config::singleton();
+
+      // see if it's the MoodleSync custom group for Contacts, Events, or Participant
       if ($groupID == $conf->getCustomGroupIdContact()) {
         $syncHelper = new CRM_Moodlesync_Helper();
         $contact = civicrm_api3('Contact', 'getsingle', ['id' => $entityID]);
         $syncHelper->syncContact($contact, FALSE);
       }
+      elseif ($groupID == $conf->getCustomGroupIdEvent()) {
+        $syncHelper = new CRM_Moodlesync_Helper();
+        $event = civicrm_api3('Event', 'getsingle', ['id' => $entityID]);
+        $syncHelper->syncEvent($event);
+      }
+      elseif ($groupID == $conf->getCustomGroupIdParticipant()) {
+        $syncHelper = new CRM_Moodlesync_Helper();
+        $participant = civicrm_api3('Participant', 'getsingle', ['id' => $entityID]);
+        $syncHelper->syncParticipant($participant);
+      }
+
     }
     catch (Exception $e) {
       CRM_Core_Session::setStatus($e->getMessage(), ts('Error'), 'error');

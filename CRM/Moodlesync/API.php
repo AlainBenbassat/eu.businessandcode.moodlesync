@@ -53,11 +53,11 @@ class CRM_Moodlesync_API {
     return $response[0]->id;
   }
 
-  public function createUser($id, $first_name, $last_name, $email) {
+  public function createUser($id, $firstName, $lastName, $email) {
     $apiParams = [
       'users[0][username]' => $email,
-      'users[0][firstname]' => $first_name,
-      'users[0][lastname]' => $last_name,
+      'users[0][firstname]' => $firstName,
+      'users[0][lastname]' => $lastName,
       'users[0][email]' => $email,
       'users[0][idnumber]' => $id,
       'users[0][password]' => 'A!-' . md5(uniqid()), // just generate a random password with upper case letter and non-alpha char
@@ -66,6 +66,19 @@ class CRM_Moodlesync_API {
     $response = $this->sendRequest('core_user_create_users', $apiParams);
 
     // return the course id
+    return $response[0]->id;
+  }
+
+  public function createEnrolment($roleId, $userId, $courseId) {
+    $apiParams = [
+      'enrolments[0][roleid]' => $roleId,
+      'enrolments[0][userid]' => $userId,
+      'enrolments[0][courseid]' => $courseId,
+    ];
+
+    $response = $this->sendRequest('enrol_manual_enrol_users', $apiParams);
+
+    // return the enrolment id
     return $response[0]->id;
   }
 
@@ -83,7 +96,6 @@ class CRM_Moodlesync_API {
 
     // send the request
     $url = $this->url . '?' . implode('&', $searchArgs);
-    //watchdog('MoodleSyncDebug', $url);
 
     list($status, $response) = $this->httpClient->get($url);
     if ($status == 'ok') {
