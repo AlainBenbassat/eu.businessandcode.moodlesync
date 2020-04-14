@@ -85,7 +85,7 @@ class CRM_Moodlesync_Helper {
     $syncFieldId = $this->config->getCustomFieldIdEventSyncWithMoodle();
     $syncThisEvent = civicrm_api3('CustomValue', 'get', [
       'sequential' => 1,
-      'entity_id' => $event->id,
+      'entity_id' => $event['id'],
       'entity_table' => 'civicrm_event',
       'return' => "custom_$syncFieldId",
     ]);
@@ -96,7 +96,7 @@ class CRM_Moodlesync_Helper {
       $courseIdField = $this->config->getCustomFieldIdEventMoodleId();
       $courseId = civicrm_api3('CustomValue', 'get', [
         'sequential' => 1,
-        'entity_id' => $event->id,
+        'entity_id' => $event['id'],
         'entity_table' => 'civicrm_event',
         'return' => "custom_$courseIdField",
       ]);
@@ -111,7 +111,7 @@ class CRM_Moodlesync_Helper {
         $categoryField = $this->config->getCustomFieldIdEventCategories();
         $category = civicrm_api3('CustomValue', 'get', [
           'sequential' => 1,
-          'entity_id' => $event->id,
+          'entity_id' => $event['id'],
           'entity_table' => 'civicrm_event',
           'return' => "custom_$categoryField",
         ]);
@@ -119,11 +119,11 @@ class CRM_Moodlesync_Helper {
 
         // create the course in Moodle
         $moodleApi = new CRM_Moodlesync_API($this->config);
-        $courseId = $moodleApi->createCourse($event->id, $event->title, $event->start_date, $event->end_date, $categoryId);
+        $courseId = $moodleApi->createCourse($event['id'], $event['title'], $event['start_date'], $event['end_date'], $categoryId);
 
         // store the Moodle course ID
         civicrm_api3('CustomValue', 'create', [
-          'entity_id' => $event->id,
+          'entity_id' => $event['id'],
           'entity_table' => 'civicrm_event',
           "custom_$courseIdField" => $courseId,
         ]);
@@ -131,7 +131,7 @@ class CRM_Moodlesync_Helper {
         // store the url to the course
         $url = $this->config->getCourseURL($courseId);
         civicrm_api3('CustomValue', 'create', [
-          'entity_id' => $event->id,
+          'entity_id' => $event['id'],
           'entity_table' => 'civicrm_event',
           "custom_" . $this->config->getCustomFieldIdEventViewInMoodle() => "<a href=\"$url\">$url</a>",
         ]);
@@ -142,7 +142,7 @@ class CRM_Moodlesync_Helper {
   }
 
   public function syncParticipant($participant) {
-    $enrolementId = 0;
+    $enrolmentId = 0;
 
     // skip sync if the participant status is "negative"
     $statusTypes = CRM_Event_PseudoConstant::participantStatus(NULL, "is_counted = 1");
@@ -160,7 +160,7 @@ class CRM_Moodlesync_Helper {
     ]);
 
     // see if it's "yes" or not specified
-    if ($syncThisParticipant['count'] == 0 && $syncThisParticipant['values'][0]['latest'] == 1) {
+    if ($syncThisParticipant['count'] == 0 || $syncThisParticipant['values'][0]['latest'] == 1) {
       // get the custom field that stores the enrolment id
       $enrolmentField = $this->config->getCustomFieldIdParticipantMoodleId();
       $enrolmentId = civicrm_api3('CustomValue', 'get', [
@@ -218,6 +218,6 @@ class CRM_Moodlesync_Helper {
       }
     }
 
-    return $enrolementId;
+    return $enrolmentId;
   }
 }
