@@ -65,6 +65,13 @@ class CRM_Moodlesync_Helper {
           'entity_table' => 'civicrm_contact',
           "custom_" . $this->config->getCustomFieldIdContactViewInMoodle() => "<a href=\"$url\">$url</a>",
         ]);
+
+        // set sync field to "yes"
+        civicrm_api3('CustomValue', 'create', [
+          'entity_id' => $contact['id'],
+          'entity_table' => 'civicrm_contact',
+          "custom_$syncFieldId" => 1,
+        ]);
       }
     }
 
@@ -199,6 +206,13 @@ class CRM_Moodlesync_Helper {
             'entity_id' => $participant['id'],
             'entity_table' => 'civicrm_participant',
             "custom_" . $this->config->getCustomFieldIdParticipantViewInMoodle() => "<a href=\"$url\">$url</a>",
+          ]);
+
+          // set sync field to "yes"
+          civicrm_api3('CustomValue', 'create', [
+            'entity_id' => $participant['id'],
+            'entity_table' => 'civicrm_participant',
+            "custom_$syncFieldId" => 1,
           ]);
         }
       }
