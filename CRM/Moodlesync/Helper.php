@@ -191,7 +191,11 @@ class CRM_Moodlesync_Helper {
 
           // create the enrolment in Moodle
           $moodleApi = new CRM_Moodlesync_API($this->config);
-          $enrolmentId = $moodleApi->createEnrolment($roleId, $userId, $courseId);
+          $moodleApi->createEnrolment($roleId, $userId, $courseId);
+
+          // the Moodle api does not return an enrolment id
+          // so we store the course id, with a link to the particpants
+          $enrolmentId = $courseId;
 
           // set the url to the enrolment
           $url = $this->config->getEnrolmentURL($enrolmentId);

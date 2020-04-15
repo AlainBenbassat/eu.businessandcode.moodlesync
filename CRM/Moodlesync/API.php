@@ -78,8 +78,8 @@ class CRM_Moodlesync_API {
 
     $response = $this->sendRequest('enrol_manual_enrol_users', $apiParams);
 
-    // return the enrolment id
-    return $response[0]->id;
+    // unfortunately, the api does not return an enrolment id
+    return '';
   }
 
   private function sendRequest($apiFunc, $apiParams) {

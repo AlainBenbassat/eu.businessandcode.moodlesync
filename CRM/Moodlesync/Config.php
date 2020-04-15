@@ -38,7 +38,11 @@ class CRM_Moodlesync_Config {
   }
 
   public function getEnrolmentURL($enrolmentId) {
-    return $this->getMoodleURL() . "enrol/editenrolment.php?ue=$enrolmentId";
+    // unfortunately, the api does not return an enrolment id!
+    //      enrol/editenrolment.php?ue=$enrolmentId
+    // so pass the course id, and the function will return a link to the participant list
+
+    return $this->getMoodleURL() . "user/index.php?id=$enrolmentId";
   }
 
   public function getMoodleToken() {
