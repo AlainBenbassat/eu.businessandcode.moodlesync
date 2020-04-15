@@ -101,7 +101,8 @@ class CRM_Moodlesync_API {
     if ($status == 'ok') {
       $decodedResponse = json_decode($response);
       if ($decodedResponse == NULL) {
-        throw new Exception("Response = $response, but expected JSON object");
+        // success (sort of :-)
+        return '';
       }
       elseif (property_exists($decodedResponse, 'exception')) {
         throw new Exception('MoodleSync Error: API=' . $apiFunc . ', Exception='. $decodedResponse->exception . ', Message=' . $decodedResponse->message);
