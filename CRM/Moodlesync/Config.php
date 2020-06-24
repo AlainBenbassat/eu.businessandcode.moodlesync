@@ -66,6 +66,7 @@ class CRM_Moodlesync_Config {
     // we just call the custom field getters
     $this->getCustomFieldIdEventSyncWithMoodle();
     $this->getCustomFieldIdEventCategories();
+    $this->getCustomFieldEventCourseSummary();
     $this->getCustomFieldIdEventMoodleId();
     $this->getCustomFieldIdEventViewInMoodle();
 
@@ -137,7 +138,7 @@ class CRM_Moodlesync_Config {
          'is_active' => 1,
          'is_searchable' => 1,
          'is_view' => 1,
-         'weight' => 3,
+         'weight' => 4,
         ]);
       }
       catch (CiviCRM_API3_Exception $ex) {
@@ -174,7 +175,7 @@ class CRM_Moodlesync_Config {
           'is_active' => 1,
           'is_searchable' => 0,
           'is_view' => 1,
-          'weight' => 4,
+          'weight' => 5,
         ]);
       }
       catch (CiviCRM_API3_Exception $ex) {
@@ -247,6 +248,44 @@ class CRM_Moodlesync_Config {
           'is_view' => 0,
           'option_group_id' => $this->getCourseCategoriesOptionGroupId(),
           'weight' => 2,
+        ]);
+      }
+      catch (CiviCRM_API3_Exception $ex) {
+        CRM_Core_Error::createError(E::ts('Error in ') . __CLASS__ . '::' . __METHOD__ . ' - ' . E::ts('Could not find or create custom field'));
+      }
+    }
+
+    return $customField['id'];
+  }
+
+  public function getCustomFieldEventCourseSummary() {
+    $customFieldName = 'moodlesync_course_summary';
+    $customGroupId = $this->getCustomGroupIdEvent();
+    try {
+      // get the field
+      $customField = civicrm_api3('CustomField', 'getsingle', [
+        'name' => $customFieldName,
+        'column_name' => $customFieldName,
+        'custom_group_id' => $customGroupId,
+      ]);
+    }
+    catch (CiviCRM_API3_Exception $ex) {
+      try {
+        // field does not exist, create it
+        $customField = civicrm_api3('CustomField', 'create', [
+          'custom_group_id' => $customGroupId,
+          'name' => $customFieldName,
+          'column_name' => $customFieldName,
+          'label' => E::ts('Course Summary'),
+          'data_type' => 'Memo',
+          'html_type' => 'RichTextEditor',
+          'is_active' => 1,
+          'is_searchable' => 0,
+          'is_search_range' => 0,
+          'in_selector' => 0,
+          'note_columns' => 60,
+          'note_rows' => 4,
+          'weight' => 3,
         ]);
       }
       catch (CiviCRM_API3_Exception $ex) {

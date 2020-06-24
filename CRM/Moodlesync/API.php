@@ -37,7 +37,7 @@ class CRM_Moodlesync_API {
     return $response;
   }
 
-  public function createCourse($id, $title, $startDate, $endDate, $categoryId) {
+  public function createCourse($id, $title, $startDate, $endDate, $categoryId, $summary) {
     $apiParams = [
       'courses[0][fullname]' => $title,
       'courses[0][shortname]' => $title,
@@ -45,6 +45,7 @@ class CRM_Moodlesync_API {
       'courses[0][idnumber]' => $id,
       'courses[0][startdate]' => strtotime($startDate),
       'courses[0][enddate]' => strtotime($endDate),
+      'courses[0][summary]' => $summary,
     ];
 
     $response = $this->sendRequest('core_course_create_courses', $apiParams);
