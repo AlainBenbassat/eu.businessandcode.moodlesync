@@ -115,11 +115,20 @@ class CRM_Moodlesync_Helper {
           'entity_table' => 'civicrm_event',
           'return' => "custom_$categoryField",
         ]);
-        $categoryId = ($courseId['count'] > 0 && $courseId['values'][0]['latest']) ? $category['values'][0]['latest'] : 1;
+        $categoryId = ($category['count'] > 0 && $category['values'][0]['latest']) ? $category['values'][0]['latest'] : 1;
+
+        // get the course summary
+        $summaryField = $this->config->getCustomFieldIdEventCourseSummary();
+        $summary = civicrm_api3('CustomValue', 'get', [
+          'sequential' => 1,
+          'entity_id' => $event['id'],
+          'entity_table' => 'civicrm_event',
+          'return' => "custom_$summaryField",
+        ]);
 
         // create the course in Moodle
         $moodleApi = new CRM_Moodlesync_API($this->config);
-        $courseId = $moodleApi->createCourse($event['id'], $event['title'], $event['start_date'], $event['end_date'], $categoryId);
+        $courseId = $moodleApi->createCourse($event['id'], $event['title'], $event['start_date'], $event['end_date'], $categoryId, $summary['values'][0]['latest']);
 
         // store the Moodle course ID
         civicrm_api3('CustomValue', 'create', [

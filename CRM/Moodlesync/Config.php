@@ -66,7 +66,7 @@ class CRM_Moodlesync_Config {
     // we just call the custom field getters
     $this->getCustomFieldIdEventSyncWithMoodle();
     $this->getCustomFieldIdEventCategories();
-    $this->getCustomFieldEventCourseSummary();
+    $this->getCustomFieldIdEventCourseSummary();
     $this->getCustomFieldIdEventMoodleId();
     $this->getCustomFieldIdEventViewInMoodle();
 
@@ -258,7 +258,7 @@ class CRM_Moodlesync_Config {
     return $customField['id'];
   }
 
-  public function getCustomFieldEventCourseSummary() {
+  public function getCustomFieldIdEventCourseSummary() {
     $customFieldName = 'moodlesync_course_summary';
     $customGroupId = $this->getCustomGroupIdEvent();
     try {
