@@ -105,7 +105,7 @@ class CRM_Moodlesync_API {
         // success (sort of :-)
         return '';
       }
-      elseif (property_exists($decodedResponse, 'exception')) {
+      elseif (is_object($decodedResponse) && property_exists($decodedResponse, 'exception')) {
         throw new Exception('MoodleSync Error: API=' . $apiFunc . ', Exception='. $decodedResponse->exception . ', Message=' . $decodedResponse->message);
       }
       else {
