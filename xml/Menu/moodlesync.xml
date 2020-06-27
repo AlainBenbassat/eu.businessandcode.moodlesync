@@ -6,4 +6,10 @@
     <title>MoodleSyncSettings</title>
     <access_arguments>access CiviCRM</access_arguments>
   </item>
+  <item>
+    <path>civicrm/moodlesync/syncparticipant</path>
+    <page_callback>CRM_Moodlesync_Form_SyncParticipant</page_callback>
+    <title>SyncParticipant</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
 </menu>

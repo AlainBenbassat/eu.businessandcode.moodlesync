@@ -32,6 +32,15 @@ function moodlesync_civicrm_custom($op, $groupID, $entityID, &$params) {
   }
 }
 
+function moodlesync_civicrm_searchTasks( $objectName, &$tasks ){
+  if($objectName == 'event'){
+    $tasks[] = [
+      'title' => E::ts('Synchronize participants with Moodle'),
+      'class' => 'CRM_Moodlesync_Form_SyncParticipant'
+    ];
+  }
+}
+
 /**
  * Implements hook_civicrm_config().
  *
