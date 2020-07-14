@@ -11,7 +11,6 @@ class CRM_Moodlesync_Form_SyncParticipant extends CRM_Event_Form_Task {
     $this->queue = CRM_Queue_Service::singleton()->create([
       'type' => 'Sql',
       'name' => $this->queueName,
-      'onEndUrl'  => CRM_Utils_System::url('civicrm/event/search', 'reset=1', TRUE, NULL, FALSE),
       'reset' => TRUE, // flush queue upon creation
     ]);
 
@@ -37,6 +36,8 @@ class CRM_Moodlesync_Form_SyncParticipant extends CRM_Event_Form_Task {
     $runner = new CRM_Queue_Runner([
       'title' => E::ts('Synchronize participants with Moodle'),
       'queue' => $this->queue,
+      'onEndUrl'  => CRM_Utils_System::url('civicrm/event/search', 'reset=1'),
+      'onEnd' => ['CRM_Moodlesync_Form_SyncParticipant', 'onEnd'],
       'errorMode'=> CRM_Queue_Runner::ERROR_CONTINUE,
     ]);
     $runner->runAllViaWeb();
@@ -47,5 +48,9 @@ class CRM_Moodlesync_Form_SyncParticipant extends CRM_Event_Form_Task {
     $participant = civicrm_api3('Participant', 'getsingle', ['id' => $id]);
     $syncHelper->syncParticipant($participant);
     return TRUE;
+  }
+
+  public static function onEnd(CRM_Queue_TaskContext $ctx) {
+    CRM_Core_Session::setStatus('Done', 'Queue', 'success');
   }
 }
