@@ -168,8 +168,12 @@ class CRM_Moodlesync_Helper {
       'return' => "custom_$syncFieldId",
     ]);
 
-    // see if it's "yes" or not specified
-    if ($syncThisParticipant['count'] == 0 || $syncThisParticipant['values'][0]['latest'] == 1) {
+    // skip if sync contact = "no"
+    if ($syncThisParticipant['count'] == 1 && $syncThisParticipant['values'][0]['latest'] == 0) {
+      // skip
+      return -1;
+    }
+    else {
       // get the custom field that stores the enrolment id
       $enrolmentField = $this->config->getCustomFieldIdParticipantMoodleId();
       $enrolmentId = civicrm_api3('CustomValue', 'get', [
@@ -233,4 +237,5 @@ class CRM_Moodlesync_Helper {
 
     return $enrolmentId;
   }
+
 }
