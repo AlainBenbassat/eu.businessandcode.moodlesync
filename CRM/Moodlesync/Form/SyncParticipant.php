@@ -28,7 +28,7 @@ class CRM_Moodlesync_Form_SyncParticipant extends CRM_Event_Form_Task {
   public function postProcess() {
     // store all the selected participant id's in the queue
     foreach ($this->_participantIds as $participantId) {
-      $task = new CRM_Queue_Task(['CRM_Moodlesync_Form_SyncParticipant', ''], [$participantId]);
+      $task = new CRM_Queue_Task(['CRM_Moodlesync_Form_SyncParticipant', 'syncParticipantTask'], [$participantId]);
       $this->queue->createItem($task);
     }
 
