@@ -11,6 +11,7 @@ class CRM_Moodlesync_Form_SyncParticipant extends CRM_Event_Form_Task {
     $this->queue = CRM_Queue_Service::singleton()->create([
       'type' => 'Sql',
       'name' => $this->queueName,
+      'onEndUrl'  => CRM_Utils_System::url('civicrm/event/search', 'reset=1', TRUE, NULL, FALSE),
       'reset' => TRUE, // flush queue upon creation
     ]);
 
