@@ -26,7 +26,7 @@ class CRM_Moodlesync_Helper {
     ]);
 
     // don't do anything if the contact is set explicitly to "do not sync"
-    if ($syncThisContact['count'] > 0 && $syncThisContact['values'][0]['latest'] == 0) {
+    if ($syncThisContact['count'] > 0 && !empty($syncThisContact['values'][0]['latest']) && $syncThisContact['values'][0]['latest'] == 0) {
       return 0;
     }
 
@@ -169,7 +169,7 @@ class CRM_Moodlesync_Helper {
     ]);
 
     // skip if sync contact = "no"
-    if ($syncThisParticipant['count'] == 1 && $syncThisParticipant['values'][0]['latest'] == 0) {
+    if ($syncThisParticipant['count'] == 1 && !empty($syncThisParticipant['values'][0]['latest']) && $syncThisParticipant['values'][0]['latest'] == 0) {
       // skip
       return -1;
     }
